@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "ib.h": "c",
+        "debug.h": "c",
+        "config.h": "c"
+    }
+}

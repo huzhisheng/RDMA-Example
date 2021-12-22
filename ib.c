@@ -3,8 +3,9 @@
 
 #include "ib.h"
 #include "debug.h"
+#include "config.h"
 
-int modify_qp_to_rts (struct ibv_qp *qp, uint32_t target_qp_num, uint16_t target_lid)
+int modify_qp_to_rts (struct ibv_qp *qp, uint32_t target_qp_num, uint16_t target_lid, uint8_t *dgid)
 {
     int ret = 0;
 
@@ -42,15 +43,15 @@ int modify_qp_to_rts (struct ibv_qp *qp, uint32_t target_qp_num, uint16_t target
 	    .ah_attr.port_num      = IB_PORT,
 	};
 
-	// if (target_lid == 0) {
-	// 	printf("using gid\n");
-	// 	qp_attr.ah_attr.is_global = 1;
-	// 	qp_attr.ah_attr.port_num = 1; /* Must */
-	// 	qp_attr.ah_attr.grh.sgid_index = local->gid_index;
-	// 	qp_attr.ah_attr.grh.dgid = remote->gid;
-	// 	qp_attr.ah_attr.grh.hop_limit = 0xFF;
-	// 	qp_attr.ah_attr.grh.traffic_class = 0;
-	// }
+	if (target_lid == 0) {
+		//printf("using gid\n");
+		qp_attr.ah_attr.is_global = 1;
+		qp_attr.ah_attr.port_num = IB_PORT; /* Must */
+		qp_attr.ah_attr.grh.sgid_index = config_info.gid_idx;
+		memcpy(&qp_attr.ah_attr.grh.dgid, dgid, 16);
+		qp_attr.ah_attr.grh.hop_limit = 0xFF;
+		qp_attr.ah_attr.grh.traffic_class = 0;
+	}
 
 	ret = ibv_modify_qp(qp, &qp_attr,
 			    IBV_QP_STATE | IBV_QP_AV |

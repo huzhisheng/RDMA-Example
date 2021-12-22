@@ -26,8 +26,15 @@ static inline uint64_t ntohll (uint64_t x) {return x; }
 #endif
 
 struct QPInfo {
-    uint16_t lid;
-    uint32_t qp_num;
+    // uint16_t lid;
+    // uint32_t qp_num;
+
+    uint64_t    addr;       /* Buffer address */
+    uint32_t    rkey;       /* Remote key */
+    uint32_t    qp_num;     /* QP number */
+    uint16_t    lid;        /* LID of the IB port */
+    uint8_t     gid[16];    /* gid */
+
 }__attribute__ ((packed));
 
 enum MsgType {
@@ -36,7 +43,7 @@ enum MsgType {
     MSG_REGULAR,
 };
 
-int modify_qp_to_rts (struct ibv_qp *qp, uint32_t qp_num, uint16_t lid);
+int modify_qp_to_rts (struct ibv_qp *qp, uint32_t target_qp_num, uint16_t target_lid, uint8_t *dgid);
 
 int post_send (uint32_t req_size, uint32_t lkey, uint64_t wr_id, 
 	       uint32_t imm_data, struct ibv_qp *qp, char *buf);

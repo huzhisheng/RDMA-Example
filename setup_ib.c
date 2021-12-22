@@ -28,9 +28,24 @@ int connect_qp_server ()
 			 &peer_addr_len);
     check (peer_sockfd > 0, "Failed to create peer_sockfd");
 
-    /* init local qp_info */
-    local_qp_info.lid	 = ib_res.port_attr.lid; 
-    local_qp_info.qp_num = ib_res.qp->qp_num;
+    /* 查询RDMA设备上port的gid, 类似路由器端口的ip地址一样 */
+    union ibv_gid    my_gid;
+    if (config_info.gid_idx >= 0) 
+    {
+        ret = ibv_query_gid(ib_res.ctx, IB_PORT, config_info.gid_idx, &my_gid);
+        if (ret) 
+        {
+            fprintf(stderr, "could not get gid for port %d, index %d\n", IB_PORT, config_info.gid_idx);
+            return ret;
+        }
+    } else
+        memset(&my_gid, 0, sizeof(my_gid));
+
+    local_qp_info.lid     = ib_res.port_attr.lid; 
+    local_qp_info.qp_num  = ib_res.qp->qp_num;
+    local_qp_info.addr    = (uintptr_t)ib_res.ib_buf;
+    local_qp_info.rkey    = ib_res.mr->rkey;
+    memcpy(local_qp_info.gid, &my_gid, 16);
     
     /* get qp_info from client */
     ret = sock_get_qp_info (peer_sockfd, &remote_qp_info);
@@ -42,7 +57,7 @@ int connect_qp_server ()
 
     /* change send QP state to RTS */    	
     ret = modify_qp_to_rts (ib_res.qp, remote_qp_info.qp_num, 
-			    remote_qp_info.lid);
+			    remote_qp_info.lid, remote_qp_info.gid);
     check (ret == 0, "Failed to modify qp to rts");
 
     log (LOG_SUB_HEADER, "Start of IB Config");
@@ -84,10 +99,26 @@ int connect_qp_client ()
     peer_sockfd = sock_create_connect (config_info.server_name,
 				       config_info.sock_port);
     check (peer_sockfd > 0, "Failed to create peer_sockfd");
+    
+    /* 查询RDMA设备上port的gid, 类似路由器端口的ip地址一样 */
+    union ibv_gid    my_gid;
+    if (config_info.gid_idx >= 0) 
+    {
+        ret = ibv_query_gid(ib_res.ctx, IB_PORT, config_info.gid_idx, &my_gid);
+        if (ret) 
+        {
+            fprintf(stderr, "could not get gid for port %d, index %d\n", IB_PORT, config_info.gid_idx);
+            return ret;
+        }
+    } else
+        memset(&my_gid, 0, sizeof(my_gid));
 
     local_qp_info.lid     = ib_res.port_attr.lid; 
-    local_qp_info.qp_num  = ib_res.qp->qp_num; 
-   
+    local_qp_info.qp_num  = ib_res.qp->qp_num;
+    local_qp_info.addr    = (uintptr_t)ib_res.ib_buf;
+    local_qp_info.rkey    = ib_res.mr->rkey;
+    memcpy(local_qp_info.gid, &my_gid, 16);
+
     /* send qp_info to server */    
     ret = sock_set_qp_info (peer_sockfd, &local_qp_info);
     check (ret == 0, "Failed to send qp_info to server");
@@ -98,7 +129,7 @@ int connect_qp_client ()
 
     /* change QP state to RTS */    	
     ret = modify_qp_to_rts (ib_res.qp, remote_qp_info.qp_num, 
-			    remote_qp_info.lid);
+			    remote_qp_info.lid, remote_qp_info.gid);
     check (ret == 0, "Failed to modify qp to rts");
 
     log (LOG_SUB_HEADER, "IB Config");

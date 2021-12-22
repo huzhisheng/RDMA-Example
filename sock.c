@@ -148,7 +148,10 @@ int sock_set_qp_info(int sock_fd, struct QPInfo *qp_info)
 
     tmp_qp_info.lid       = htons(qp_info->lid);
     tmp_qp_info.qp_num    = htonl(qp_info->qp_num);
-    
+    tmp_qp_info.addr      = htonll(qp_info->addr);
+    tmp_qp_info.rkey      = htonl(qp_info->rkey);
+    memcpy(tmp_qp_info.gid, qp_info->gid, 16);
+
     n = sock_write(sock_fd, (char *)&tmp_qp_info, sizeof(struct QPInfo));
     check(n==sizeof(struct QPInfo), "write qp_info to socket.");
 
@@ -168,7 +171,10 @@ int sock_get_qp_info(int sock_fd, struct QPInfo *qp_info)
 
     qp_info->lid       = ntohs(tmp_qp_info.lid);
     qp_info->qp_num    = ntohl(tmp_qp_info.qp_num);
-    
+    qp_info->addr      = ntohll(tmp_qp_info.addr);
+    qp_info->rkey      = ntohl(tmp_qp_info.rkey);
+    memcpy(qp_info->gid, tmp_qp_info.gid, 16);
+
     return 0;
 
  error:

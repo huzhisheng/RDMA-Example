@@ -9,7 +9,7 @@
 
 FILE	*log_fp	     = NULL;
 
-int	init_env    ();
+int	    init_env    ();
 void	destroy_env ();
 
 int main (int argc, char *argv[])
@@ -31,6 +31,7 @@ int main (int argc, char *argv[])
 
     config_info.msg_size         = 64; 
     config_info.num_concurr_msgs = 1;
+    config_info.gid_idx          = 0;
 
     ret = init_env ();
     check (ret == 0, "Failed to init env");
