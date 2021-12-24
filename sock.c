@@ -155,6 +155,13 @@ int sock_set_qp_info(int sock_fd, struct QPInfo *qp_info)
     n = sock_write(sock_fd, (char *)&tmp_qp_info, sizeof(struct QPInfo));
     check(n==sizeof(struct QPInfo), "write qp_info to socket.");
 
+    fprintf(stdout, "set gid:");
+    for(int i=0; i<16; i++)
+        fprintf(stdout, "%x", tmp_qp_info.gid[i]);
+    fprintf(stdout, "\n");
+
+    fprintf(stdout, "set qp_num: %x\n", qp_info->qp_num);
+
     return 0;
 
  error:
@@ -174,6 +181,13 @@ int sock_get_qp_info(int sock_fd, struct QPInfo *qp_info)
     qp_info->addr      = ntohll(tmp_qp_info.addr);
     qp_info->rkey      = ntohl(tmp_qp_info.rkey);
     memcpy(qp_info->gid, tmp_qp_info.gid, 16);
+
+    fprintf(stdout, "get gid:");
+    for(int i=0; i<16; i++)
+        fprintf(stdout, "%x", qp_info->gid[i]);
+    fprintf(stdout, "\n");
+    
+    fprintf(stdout, "get qp_num: %x\n", qp_info->qp_num);
 
     return 0;
 

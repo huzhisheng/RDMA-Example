@@ -2,6 +2,11 @@
     "files.associations": {
         "ib.h": "c",
         "debug.h": "c",
-        "config.h": "c"
+        "config.h": "c",
+        "types.h": "c",
+        "endian.h": "c",
+        "unistd.h": "c",
+        "time.h": "c",
+        "inttypes.h": "c"
     }
 }

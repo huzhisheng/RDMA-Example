@@ -18,7 +18,8 @@ int connect_qp_server ()
     struct sockaddr_in	peer_addr;
     socklen_t		peer_addr_len = sizeof(struct sockaddr_in);
     char sock_buf[64]		      = {'\0'};
-    struct QPInfo	local_qp_info, remote_qp_info;
+    
+    struct QPInfo local_qp_info;
 
     sockfd = sock_create_bind(config_info.sock_port);
     check(sockfd > 0, "Failed to create server socket.");
@@ -45,10 +46,13 @@ int connect_qp_server ()
     local_qp_info.qp_num  = ib_res.qp->qp_num;
     local_qp_info.addr    = (uintptr_t)ib_res.ib_buf;
     local_qp_info.rkey    = ib_res.mr->rkey;
+    fprintf(stdout, "local buf addr: %x\n", local_qp_info.addr);
+    fprintf(stdout, "local buf rkey: %x\n", local_qp_info.rkey);
+
     memcpy(local_qp_info.gid, &my_gid, 16);
     
     /* get qp_info from client */
-    ret = sock_get_qp_info (peer_sockfd, &remote_qp_info);
+    ret = sock_get_qp_info (peer_sockfd, &ib_res.remote_qp_info);
     check (ret == 0, "Failed to get qp_info from client");
     
     /* send qp_info to client */    
@@ -56,13 +60,12 @@ int connect_qp_server ()
     check (ret == 0, "Failed to send qp_info to client");
 
     /* change send QP state to RTS */    	
-    ret = modify_qp_to_rts (ib_res.qp, remote_qp_info.qp_num, 
-			    remote_qp_info.lid, remote_qp_info.gid);
+    ret = modify_qp_to_rts (ib_res.qp, &ib_res.remote_qp_info);
     check (ret == 0, "Failed to modify qp to rts");
 
     log (LOG_SUB_HEADER, "Start of IB Config");
     log ("\tqp[%"PRIu32"] <-> qp[%"PRIu32"]", 
-	 ib_res.qp->qp_num, remote_qp_info.qp_num);
+	 ib_res.qp->qp_num, ib_res.remote_qp_info.qp_num);
     log (LOG_SUB_HEADER, "End of IB Config");
 
     /* sync with clients */
@@ -94,7 +97,7 @@ int connect_qp_client ()
     int peer_sockfd   = 0;
     char sock_buf[64] = {'\0'};
 
-    struct QPInfo local_qp_info, remote_qp_info;
+    struct QPInfo local_qp_info;
 
     peer_sockfd = sock_create_connect (config_info.server_name,
 				       config_info.sock_port);
@@ -119,22 +122,23 @@ int connect_qp_client ()
     local_qp_info.rkey    = ib_res.mr->rkey;
     memcpy(local_qp_info.gid, &my_gid, 16);
 
+    fprintf(stdout, "local buf addr: %x\n", local_qp_info.addr);
+    fprintf(stdout, "local buf rkey: %x\n", local_qp_info.rkey);
     /* send qp_info to server */    
     ret = sock_set_qp_info (peer_sockfd, &local_qp_info);
     check (ret == 0, "Failed to send qp_info to server");
 
     /* get qp_info from server */    
-    ret = sock_get_qp_info (peer_sockfd, &remote_qp_info);
+    ret = sock_get_qp_info (peer_sockfd, &ib_res.remote_qp_info);
     check (ret == 0, "Failed to get qp_info from server");
 
     /* change QP state to RTS */    	
-    ret = modify_qp_to_rts (ib_res.qp, remote_qp_info.qp_num, 
-			    remote_qp_info.lid, remote_qp_info.gid);
+    ret = modify_qp_to_rts (ib_res.qp, &ib_res.remote_qp_info);
     check (ret == 0, "Failed to modify qp to rts");
 
     log (LOG_SUB_HEADER, "IB Config");
     log ("\tqp[%"PRIu32"] <-> qp[%"PRIu32"]", 
-	 ib_res.qp->qp_num, remote_qp_info.qp_num);
+	 ib_res.qp->qp_num, ib_res.remote_qp_info.qp_num);
     log (LOG_SUB_HEADER, "End of IB Config");
 
     /* sync with server */
@@ -181,6 +185,7 @@ int setup_ib ()
     ib_res.ib_buf_size = config_info.msg_size * config_info.num_concurr_msgs;
     ib_res.ib_buf      = (char *) memalign (4096, ib_res.ib_buf_size);
     check (ib_res.ib_buf != NULL, "Failed to allocate ib_buf");
+    memset(ib_res.ib_buf, 0, ib_res.ib_buf_size);   //初始将ib_buf清0
 
     ib_res.mr = ibv_reg_mr (ib_res.pd, (void *)ib_res.ib_buf,
 			    ib_res.ib_buf_size,
