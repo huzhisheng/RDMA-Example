@@ -12,12 +12,5 @@ sock_port                 = 19875
 ************ End of Configuraion ************
 
 
-************ Start of IB Config ************
-
-	qp[18] <-> qp[17]
-
-************ End of IB Config ************
-
-
 ================ Run Finished ================
 
