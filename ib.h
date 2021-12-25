@@ -64,25 +64,7 @@ struct IBRes {
 
 int modify_qp_to_rts (struct ibv_qp *qp, struct QPInfo *remote_qp_info);
 
-// int post_send (uint32_t req_size, uint32_t lkey, uint64_t wr_id, 
-// 	       uint32_t imm_data, struct ibv_qp *qp, char *buf);
-
-// int post_recv (uint32_t req_size, uint32_t lkey, uint64_t wr_id, 
-// 	       struct ibv_qp *qp, char *buf);
-
-int post_write_signaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-						struct ibv_qp *qp, char *buf,
-						uint64_t raddr, uint32_t rkey);
-
-// int post_write_unsignaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-// 						  struct ibv_qp *qp, char *buf,
-// 						  uint64_t raddr, uint32_t rkey);
-
 int poll_completion(struct ibv_cq *cq);
-
-// int post_read(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-// 						struct ibv_qp *qp, char *buf,
-// 						uint64_t raddr, uint32_t rkey);
 
 int post_send(struct IBRes *ib_res, int opcode);
 

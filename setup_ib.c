@@ -6,18 +6,16 @@
 #include "ib.h"
 #include "debug.h"
 #include "config.h"
-#include "setup_ib.h"
 
 struct IBRes ib_res;
 
 int connect_qp_server()
 {
-    int ret = 0, n = 0;
+    int ret = 0;
     int sockfd = 0;
     int peer_sockfd = 0;
     struct sockaddr_in peer_addr;
     socklen_t peer_addr_len = sizeof(struct sockaddr_in);
-    char sock_buf[64] = {'\0'};
 
     struct QPInfo local_qp_info;
 
@@ -47,8 +45,6 @@ int connect_qp_server()
     local_qp_info.qp_num = ib_res.qp->qp_num;
     local_qp_info.addr = (uintptr_t)ib_res.ib_buf;
     local_qp_info.rkey = ib_res.mr->rkey;
-    fprintf(stdout, "local buf addr: %x\n", local_qp_info.addr);
-    fprintf(stdout, "local buf rkey: %x\n", local_qp_info.rkey);
 
     memcpy(local_qp_info.gid, &my_gid, 16);
 
@@ -68,25 +64,18 @@ int connect_qp_server()
     log("\tqp[%" PRIu32 "] <-> qp[%" PRIu32 "]",
         ib_res.qp->qp_num, ib_res.remote_qp_info.qp_num);
     log(LOG_SUB_HEADER, "End of IB Config");
-
-    /* sync with clients */
-    // n = sock_read(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to receive sync from client");
-
-    // n = sock_write(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to write sync to client");
     
     ib_res.remote_socket = peer_sockfd;
 
     char temp_char;
-    /* Sync so we are sure server side has data ready before client tries to read it */
+    /* 利用write & read socket的阻塞来进行同步 */
     if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
     {
         fprintf(stderr, "sync error before RDMA ops\n");
     }
 
-    //close(peer_sockfd);
-    //close(sockfd);
+    close(peer_sockfd);
+    close(sockfd);
 
     return 0;
 
@@ -105,9 +94,8 @@ error:
 
 int connect_qp_client()
 {
-    int ret = 0, n = 0;
+    int ret = 0;
     int peer_sockfd = 0;
-    char sock_buf[64] = {'\0'};
 
     struct QPInfo local_qp_info;
 
@@ -135,8 +123,6 @@ int connect_qp_client()
     local_qp_info.rkey = ib_res.mr->rkey;
     memcpy(local_qp_info.gid, &my_gid, 16);
 
-    fprintf(stdout, "local buf addr: %x\n", local_qp_info.addr);
-    fprintf(stdout, "local buf rkey: %x\n", local_qp_info.rkey);
     /* send qp_info to server */
     ret = sock_set_qp_info(peer_sockfd, &local_qp_info);
     check(ret == 0, "Failed to send qp_info to server");
@@ -154,22 +140,17 @@ int connect_qp_client()
         ib_res.qp->qp_num, ib_res.remote_qp_info.qp_num);
     log(LOG_SUB_HEADER, "End of IB Config");
 
-    /* sync with server */
-    // n = sock_write(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to write sync to client");
-
-    // n = sock_read(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to receive sync from client");
-
-    //close(peer_sockfd);
+    
     ib_res.remote_socket = peer_sockfd;
 
     char temp_char;
-    /* Sync so we are sure server side has data ready before client tries to read it */
+    /* 利用write & read socket的阻塞来进行同步 */
     if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
     {
         fprintf(stderr, "sync error before RDMA ops\n");
     }
+    
+    close(peer_sockfd);
     return 0;
 
 error:

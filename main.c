@@ -3,7 +3,6 @@
 #include "debug.h"
 #include "config.h"
 #include "ib.h"
-#include "setup_ib.h"
 #include "client.h"
 #include "server.h"
 
