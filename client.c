@@ -23,7 +23,7 @@ int run_client()
     struct ibv_wc *wc   = NULL;
     uint32_t lkey       = ib_res.mr->lkey;
     uint32_t rkey       = ib_res.remote_qp_info.rkey;
-    uint32_t raddr      = ib_res.remote_qp_info.addr;
+    uint64_t raddr      = ib_res.remote_qp_info.addr;
     char *buf_ptr       = ib_res.ib_buf;
     int buf_offset      = 0;
     size_t buf_size     = ib_res.ib_buf_size;
@@ -37,10 +37,9 @@ int run_client()
     int i, n, ret, ops_count = 0;
     // for (i = 0; i < num_concurr_msgs; i++)
     // {
-        ret = post_recv(0, lkey, (uint64_t)buf_ptr, qp, buf_ptr);
-        
-        check(ret == 0, "client: failed to post recv");
-        check(poll_completion(cq) == 0, "client: poll completion failed.");
+        //ret = post_recv(0, lkey, (uint64_t)buf_ptr, qp, buf_ptr);
+        // check(post_receive(&ib_res) == 0, "client: failed to post recv");
+        // check(poll_completion(cq) == 0, "client: poll completion failed.");
     //     buf_offset = (buf_offset + msg_size) % buf_size;
     //     buf_ptr += buf_offset;
     // }
@@ -77,39 +76,44 @@ int run_client()
     //     }
     // }
 
-    char temp_char;
-    /* Sync so we are sure server side has data ready before client tries to read it */
-    if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
-    {
-        fprintf(stderr, "sync error before RDMA ops\n");
-    }
+    // char temp_char;
+    // /* Sync so we are sure server side has data ready before client tries to read it */
+    // if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
+    // {
+    //     fprintf(stderr, "sync error before RDMA ops\n");
+    // }
 
-    /* First we read contens of server's buffer */
-    ret = post_send(0, lkey, 0, 3, qp, buf_ptr);
-    check (ret == 0, "client: failed to read.");
-    check (poll_completion(cq) == 0, "client: poll completion failed.");
-    fprintf(stdout, "Contents of client's buffer: '%s'\n", ib_res.ib_buf);
+    /* First we read contens of server's buffer */    
+    // check (post_send(&ib_res, IBV_WR_SEND) == 0, "client: failed to read.");
+    // check (poll_completion(cq) == 0, "client: poll completion failed.");
+    // fprintf(stdout, "Contents of client's buffer: '%s'\n", ib_res.ib_buf);
 
     log("client: ready to send");
 
-    // while((*buf_ptr) != 'q')
-    // {
-        // fprintf(stdout, "Send text:\n");
-        // fgets(buf_ptr, buf_size, stdin);
-        char temp_str[16] = "123";
-        strcpy(buf_ptr, temp_str);
+    while((*buf_ptr) != 'q')
+    {
+        fprintf(stdout, "Send text:\n");
+        fgets(buf_ptr, buf_size, stdin);
+        // char temp_str[16] = "123";
+        // strcpy(buf_ptr, temp_str);
 
         // ops_count += 1;
         //if ((ops_count % SIG_INTERVAL) == 0) {
-            ret = post_write_signaled (msg_size, lkey, 0, qp, buf_ptr, raddr, rkey);
+            // ret = post_write (msg_size, lkey, 0, qp, buf_ptr, raddr, rkey);
         //} else {
             //ret = post_write_unsignaled (msg_size, lkey, 0, qp, buf_ptr, raddr, rkey);
         //}
-        check (ret == 0, "client: failed to write.");
-        fprintf(stdout, "Sent text: %s", buf_ptr);
-
+        check (post_send(&ib_res, IBV_WR_RDMA_WRITE) == 0, "client: failed to write.");
         check (poll_completion(cq) == 0, "client: poll completion failed.");
-    
+        // ret = post_write_signaled (msg_size, lkey, 0, qp, buf_ptr, raddr, rkey);
+        // check (ret == 0, "client: failed to write.");
+        //fprintf(stdout, "Sent text: %s", buf_ptr);
+        
+        memset(ib_res.ib_buf, 0, ib_res.ib_buf_size);
+        check (post_send(&ib_res, IBV_WR_RDMA_READ) == 0, "client: failed to read.");
+        check (poll_completion(cq) == 0, "client: poll completion failed.");
+        fprintf(stdout, "Read text: %s", buf_ptr);
+    }
     // char sock_buf[64] = {'\0'};
     // int peer_sockfd = ib_res.remote_socket;
     // /* sync with clients */
@@ -122,10 +126,10 @@ int run_client()
 
     //char temp_char;
     /* Sync so we are sure server side has data ready before client tries to read it */
-    if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
-    {
-        fprintf(stderr, "sync error before RDMA ops\n");
-    }
+    // if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
+    // {
+    //     fprintf(stderr, "sync error before RDMA ops\n");
+    // }
     free(wc);
     return 0;
 error:

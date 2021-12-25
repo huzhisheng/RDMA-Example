@@ -70,13 +70,20 @@ int connect_qp_server()
     log(LOG_SUB_HEADER, "End of IB Config");
 
     /* sync with clients */
-    n = sock_read(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    check(n == sizeof(SOCK_SYNC_MSG), "Failed to receive sync from client");
+    // n = sock_read(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
+    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to receive sync from client");
 
-    n = sock_write(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    check(n == sizeof(SOCK_SYNC_MSG), "Failed to write sync to client");
+    // n = sock_write(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
+    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to write sync to client");
     
     ib_res.remote_socket = peer_sockfd;
+
+    char temp_char;
+    /* Sync so we are sure server side has data ready before client tries to read it */
+    if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
+    {
+        fprintf(stderr, "sync error before RDMA ops\n");
+    }
 
     //close(peer_sockfd);
     //close(sockfd);
@@ -148,21 +155,21 @@ int connect_qp_client()
     log(LOG_SUB_HEADER, "End of IB Config");
 
     /* sync with server */
-    n = sock_write(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    check(n == sizeof(SOCK_SYNC_MSG), "Failed to write sync to client");
+    // n = sock_write(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
+    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to write sync to client");
 
-    n = sock_read(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
-    check(n == sizeof(SOCK_SYNC_MSG), "Failed to receive sync from client");
+    // n = sock_read(peer_sockfd, sock_buf, sizeof(SOCK_SYNC_MSG));
+    // check(n == sizeof(SOCK_SYNC_MSG), "Failed to receive sync from client");
 
     //close(peer_sockfd);
     ib_res.remote_socket = peer_sockfd;
 
-    // char temp_char;
-    // /* Sync so we are sure server side has data ready before client tries to read it */
-    // if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
-    // {
-    //     fprintf(stderr, "sync error before RDMA ops\n");
-    // }
+    char temp_char;
+    /* Sync so we are sure server side has data ready before client tries to read it */
+    if(sock_sync_data(ib_res.remote_socket, 1, "R", &temp_char))  /* just send a dummy char back and forth */
+    {
+        fprintf(stderr, "sync error before RDMA ops\n");
+    }
     return 0;
 
 error:

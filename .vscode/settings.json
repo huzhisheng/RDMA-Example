@@ -8,6 +8,8 @@
         "unistd.h": "c",
         "time.h": "c",
         "inttypes.h": "c",
-        "server.h": "c"
+        "server.h": "c",
+        "setup_ib.h": "c",
+        "verbs.h": "c"
     }
 }

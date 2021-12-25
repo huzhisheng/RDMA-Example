@@ -93,48 +93,48 @@ error:
 	return -1;
 }
 
-int post_send(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-			  uint32_t imm_data, struct ibv_qp *qp, char *buf)
-{
-	int ret = 0;
-	struct ibv_send_wr *bad_send_wr;
+// int post_send(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
+// 			  uint32_t imm_data, struct ibv_qp *qp, char *buf)
+// {
+// 	int ret = 0;
+// 	struct ibv_send_wr *bad_send_wr;
 
-	struct ibv_sge list = {
-		.addr = (uintptr_t)buf,
-		.length = req_size,
-		.lkey = lkey};
+// 	struct ibv_sge list = {
+// 		.addr = (uintptr_t)buf,
+// 		.length = req_size,
+// 		.lkey = lkey};
 
-	struct ibv_send_wr send_wr = {
-		.wr_id = wr_id,
-		.sg_list = &list,
-		.num_sge = 1,
-		.opcode = IBV_WR_SEND_WITH_IMM,
-		.send_flags = IBV_SEND_SIGNALED,
-		.imm_data = htonl(imm_data)};
+// 	struct ibv_send_wr send_wr = {
+// 		.wr_id = wr_id,
+// 		.sg_list = &list,
+// 		.num_sge = 1,
+// 		.opcode = IBV_WR_SEND_WITH_IMM,
+// 		.send_flags = IBV_SEND_SIGNALED,
+// 		.imm_data = htonl(imm_data)};
 
-	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
-	return ret;
-}
+// 	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
+// 	return ret;
+// }
 
-int post_recv(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-			  struct ibv_qp *qp, char *buf)
-{
-	int ret = 0;
-	struct ibv_recv_wr *bad_recv_wr;
+// int post_recv(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
+// 			  struct ibv_qp *qp, char *buf)
+// {
+// 	int ret = 0;
+// 	struct ibv_recv_wr *bad_recv_wr;
 
-	struct ibv_sge list = {
-		.addr = (uintptr_t)buf,
-		.length = req_size,
-		.lkey = lkey};
+// 	struct ibv_sge list = {
+// 		.addr = (uintptr_t)buf,
+// 		.length = req_size,
+// 		.lkey = lkey};
 
-	struct ibv_recv_wr recv_wr = {
-		.wr_id = wr_id,
-		.sg_list = &list,
-		.num_sge = 1};
+// 	struct ibv_recv_wr recv_wr = {
+// 		.wr_id = wr_id,
+// 		.sg_list = &list,
+// 		.num_sge = 1};
 
-	ret = ibv_post_recv(qp, &recv_wr, &bad_recv_wr);
-	return ret;
-}
+// 	ret = ibv_post_recv(qp, &recv_wr, &bad_recv_wr);
+// 	return ret;
+// }
 
 int post_write_signaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
 						struct ibv_qp *qp, char *buf,
@@ -165,59 +165,59 @@ int post_write_signaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
 	return ret;
 }
 
-int post_write_unsignaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-						  struct ibv_qp *qp, char *buf,
-						  uint64_t raddr, uint32_t rkey)
-{
-	fprintf(stdout, "send remote addr: %llx\n", raddr);
-	fprintf(stdout, "send remote rkey: %x\n", rkey);
-	fprintf(stdout, "send data: %s", buf);
-	int ret = 0;
-	struct ibv_send_wr *bad_send_wr;
+// int post_write_unsignaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
+// 						  struct ibv_qp *qp, char *buf,
+// 						  uint64_t raddr, uint32_t rkey)
+// {
+// 	fprintf(stdout, "send remote addr: %llx\n", raddr);
+// 	fprintf(stdout, "send remote rkey: %x\n", rkey);
+// 	fprintf(stdout, "send data: %s", buf);
+// 	int ret = 0;
+// 	struct ibv_send_wr *bad_send_wr;
 
-	struct ibv_sge list = {
-		.addr = (uintptr_t)buf,
-		.length = req_size,
-		.lkey = lkey};
+// 	struct ibv_sge list = {
+// 		.addr = (uintptr_t)buf,
+// 		.length = req_size,
+// 		.lkey = lkey};
 
-	struct ibv_send_wr send_wr = {
-		.wr_id = wr_id,
-		.sg_list = &list,
-		.num_sge = 1,
-		.opcode = IBV_WR_RDMA_WRITE,
-		.wr.rdma.remote_addr = raddr,
-		.wr.rdma.rkey = rkey,
-	};
+// 	struct ibv_send_wr send_wr = {
+// 		.wr_id = wr_id,
+// 		.sg_list = &list,
+// 		.num_sge = 1,
+// 		.opcode = IBV_WR_RDMA_WRITE,
+// 		.wr.rdma.remote_addr = raddr,
+// 		.wr.rdma.rkey = rkey,
+// 	};
 
-	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
-	return ret;
-}
+// 	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
+// 	return ret;
+// }
 
-int post_read(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
-						struct ibv_qp *qp, char *buf,
-						uint64_t raddr, uint32_t rkey)
-{
-	int ret = 0;
-	struct ibv_send_wr *bad_send_wr;
+// int post_read(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
+// 						struct ibv_qp *qp, char *buf,
+// 						uint64_t raddr, uint32_t rkey)
+// {
+// 	int ret = 0;
+// 	struct ibv_send_wr *bad_send_wr;
 
-	struct ibv_sge list = {
-		.addr = (uintptr_t)buf,
-		.length = req_size,
-		.lkey = lkey};
+// 	struct ibv_sge list = {
+// 		.addr = (uintptr_t)buf,
+// 		.length = req_size,
+// 		.lkey = lkey};
 
-	struct ibv_send_wr send_wr = {
-		.wr_id = wr_id,
-		.sg_list = &list,
-		.num_sge = 1,
-		.opcode = IBV_WR_RDMA_READ,
-		.send_flags = IBV_SEND_SIGNALED,
-		.wr.rdma.remote_addr = raddr,
-		.wr.rdma.rkey = rkey,
-	};
+// 	struct ibv_send_wr send_wr = {
+// 		.wr_id = wr_id,
+// 		.sg_list = &list,
+// 		.num_sge = 1,
+// 		.opcode = IBV_WR_RDMA_READ,
+// 		.send_flags = IBV_SEND_SIGNALED,
+// 		.wr.rdma.remote_addr = raddr,
+// 		.wr.rdma.rkey = rkey,
+// 	};
 
-	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
-	return ret;
-}
+// 	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
+// 	return ret;
+// }
 
 int poll_completion(struct ibv_cq *cq)
 {
@@ -261,6 +261,119 @@ int poll_completion(struct ibv_cq *cq)
 					wc.status, wc.vendor_err);
             rc = 1;
         }
+    }
+    return rc;
+}
+
+/******************************************************************************
+* Function: post_send
+*
+* Input:
+* res: pointer to resources structure
+* opcode: IBV_WR_SEND, IBV_WR_RDMA_READ or IBV_WR_RDMA_WRITE
+*
+* Output: none
+*
+* Returns: 0 on success, error code on failure
+*
+* Description: This function will create and post a send work request
+******************************************************************************/
+int post_send(struct IBRes *ib_res, int opcode)
+{
+    struct ibv_send_wr sr;
+    struct ibv_sge sge;
+    struct ibv_send_wr *bad_wr = NULL;
+    int rc = 0;
+
+    /* prepare the scatter/gather entry */
+    memset(&sge, 0, sizeof(sge));
+    sge.addr = (uintptr_t)ib_res->ib_buf;
+    sge.length = ib_res->ib_buf_size;
+    sge.lkey = ib_res->mr->lkey;
+
+    /* prepare the send work request */
+    memset(&sr, 0, sizeof(sr));
+    sr.next = NULL;
+    sr.wr_id = 0;
+    sr.sg_list = &sge;
+    sr.num_sge = 1;
+    sr.opcode = opcode;
+    sr.send_flags = IBV_SEND_SIGNALED;
+    if(opcode != IBV_WR_SEND)
+    {
+        sr.wr.rdma.remote_addr = ib_res->remote_qp_info.addr;
+        sr.wr.rdma.rkey = ib_res->remote_qp_info.rkey;
+    }
+
+    /* there is a Receive Request in the responder side, so we won't get any into RNR flow */
+    rc = ibv_post_send(ib_res->qp, &sr, &bad_wr);
+    if(rc)
+    {
+        fprintf(stderr, "failed to post SR\n");
+    }
+    else
+    {
+        switch(opcode)
+        {
+        case IBV_WR_SEND:
+            fprintf(stdout, "Send Request was posted\n");
+            break;
+        case IBV_WR_RDMA_READ:
+            fprintf(stdout, "RDMA Read Request was posted\n");
+            break;
+        case IBV_WR_RDMA_WRITE:
+            fprintf(stdout, "RDMA Write Request was posted\n");
+            break;
+        default:
+            fprintf(stdout, "Unknown Request was posted\n");
+            break;
+        }
+    }
+    return rc;
+}
+
+/******************************************************************************
+* Function: post_receive
+*
+* Input:
+* res: pointer to resources structure
+*
+* Output: none
+*
+* Returns: 0 on success, error code on failure
+*
+* Description: post RR to be prepared for incoming messages
+*
+******************************************************************************/
+int post_receive(struct IBRes *ib_res)
+{
+    struct ibv_recv_wr rr;
+    struct ibv_sge sge;
+    struct ibv_recv_wr *bad_wr;
+    int rc = 0;
+
+    /* prepare the scatter/gather entry */
+    memset(&sge, 0, sizeof(sge));
+    sge.addr = (uintptr_t)ib_res->ib_buf;
+    sge.length = ib_res->ib_buf_size;
+    sge.lkey = ib_res->mr->lkey;
+
+    /* prepare the receive work request */
+    memset(&rr, 0, sizeof(rr));
+    rr.next = NULL;
+    rr.wr_id = 0;
+    rr.sg_list = &sge;
+    rr.num_sge = 1;
+
+    /* post the Receive Request to the RQ */
+    rc = ibv_post_recv(ib_res->qp, &rr, &bad_wr);
+    if(rc)
+    {
+        fprintf(stderr, "failed to post RR\n");
+    }
+    else
+    {
+        fprintf(stdout, "Receive Request was posted\n");
     }
     return rc;
 }
