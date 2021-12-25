@@ -48,15 +48,10 @@ int modify_qp_to_rts(struct ibv_qp *qp, struct QPInfo *remote_qp_info)
 
 		if (target_lid == 0)
 		{
-			printf("using gid\n");
 			qp_attr.ah_attr.is_global = 1;
 			qp_attr.ah_attr.port_num = IB_PORT; /* Must */
 			qp_attr.ah_attr.grh.sgid_index = config_info.gid_idx;
 			memcpy(&qp_attr.ah_attr.grh.dgid, dgid, 16);
-			fprintf(stdout, "grh gid:");
-			for (int i = 0; i < 16; i++)
-				fprintf(stdout, "%x", dgid[i]);
-			fprintf(stdout, "\n");
 			qp_attr.ah_attr.grh.hop_limit = 0xFF;
 			qp_attr.ah_attr.grh.flow_label = 0;
 			qp_attr.ah_attr.grh.traffic_class = 0;

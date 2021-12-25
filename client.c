@@ -17,7 +17,7 @@ int run_client()
 
     while((*buf_ptr) != 'q')
     {
-        fprintf(stdout, "Send text:\n");
+        fprintf(stdout, "Send text: ");
         check(fgets(buf_ptr, buf_size, stdin) != NULL, "client: fgets failed.");
 
         check (post_send(&ib_res, IBV_WR_RDMA_WRITE) == 0, "client: failed to write.");

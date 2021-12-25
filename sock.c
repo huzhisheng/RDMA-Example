@@ -155,13 +155,6 @@ int sock_set_qp_info(int sock_fd, struct QPInfo *qp_info)
     n = sock_write(sock_fd, (char *)&tmp_qp_info, sizeof(struct QPInfo));
     check(n==sizeof(struct QPInfo), "write qp_info to socket.");
 
-    fprintf(stdout, "set gid:");
-    for(int i=0; i<16; i++)
-        fprintf(stdout, "%x", tmp_qp_info.gid[i]);
-    fprintf(stdout, "\n");
-
-    fprintf(stdout, "set qp_num: %x\n", qp_info->qp_num);
-
     return 0;
 
  error:
@@ -182,13 +175,6 @@ int sock_get_qp_info(int sock_fd, struct QPInfo *qp_info)
     qp_info->rkey      = ntohl(tmp_qp_info.rkey);
     memcpy(qp_info->gid, tmp_qp_info.gid, 16);
 
-    fprintf(stdout, "get gid:");
-    for(int i=0; i<16; i++)
-        fprintf(stdout, "%x", qp_info->gid[i]);
-    fprintf(stdout, "\n");
-    
-    fprintf(stdout, "get qp_num: %x\n", qp_info->qp_num);
-
     return 0;
 
  error:
@@ -197,7 +183,6 @@ int sock_get_qp_info(int sock_fd, struct QPInfo *qp_info)
 
 int sock_sync_data(int sock, int xfer_size, char *local_data, char *remote_data)
 {
-    printf("sync start\n");
     int rc;
     int read_bytes = 0;
     int total_read_bytes = 0;
@@ -211,12 +196,10 @@ int sock_sync_data(int sock, int xfer_size, char *local_data, char *remote_data)
     {
         rc = 0;
     }
-    printf("sync read start rc = %x\n", rc);
     while(!rc && total_read_bytes < xfer_size)
     {
         read_bytes = read(sock, remote_data, xfer_size);
         check(read_bytes >= 0, "error in read");
-        printf("read_bytes:%d\n", read_bytes);
         if(read_bytes > 0)
         {
             total_read_bytes += read_bytes;
@@ -227,6 +210,5 @@ int sock_sync_data(int sock, int xfer_size, char *local_data, char *remote_data)
         }
     }
 error:
-    printf("sync ok\n");
     return rc;
 }
