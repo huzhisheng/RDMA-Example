@@ -15,7 +15,7 @@
 #define NUM_WARMING_UP_OPS      500000
 #define TOT_NUM_OPS             5000000
 #define SIG_INTERVAL            1000
-#define MAX_POLL_CQ_TIMEOUT     1000
+#define MAX_POLL_CQ_TIMEOUT     20000
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 static inline uint64_t htonll (uint64_t x) {return bswap_64(x); }
@@ -60,6 +60,11 @@ int post_write_signaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
 int post_write_unsignaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
 						  struct ibv_qp *qp, char *buf,
 						  uint64_t raddr, uint32_t rkey);
+
 int poll_completion(struct ibv_cq *cq);
+
+int post_read(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
+						struct ibv_qp *qp, char *buf,
+						uint64_t raddr, uint32_t rkey);
 
 #endif /*ib.h*/

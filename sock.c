@@ -194,3 +194,39 @@ int sock_get_qp_info(int sock_fd, struct QPInfo *qp_info)
  error:
     return -1;
 }
+
+int sock_sync_data(int sock, int xfer_size, char *local_data, char *remote_data)
+{
+    printf("sync start\n");
+    int rc;
+    int read_bytes = 0;
+    int total_read_bytes = 0;
+    rc = write(sock, local_data, xfer_size);
+
+    if(rc < xfer_size)
+    {
+        fprintf(stderr, "Failed writing data during sock_sync_data\n");
+    }
+    else
+    {
+        rc = 0;
+    }
+    printf("sync read start rc = %x\n", rc);
+    while(!rc && total_read_bytes < xfer_size)
+    {
+        read_bytes = read(sock, remote_data, xfer_size);
+        check(read_bytes >= 0, "error in read");
+        printf("read_bytes:%d\n", read_bytes);
+        if(read_bytes > 0)
+        {
+            total_read_bytes += read_bytes;
+        }
+        else
+        {
+            rc = read_bytes;
+        }
+    }
+error:
+    printf("sync ok\n");
+    return rc;
+}

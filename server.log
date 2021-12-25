@@ -7,7 +7,7 @@
 is_server                 = true
 msg_size                  = 64
 num_concurr_msgs          = 1
-sock_port                 = 12313
+sock_port                 = 19876
 
 ************ End of Configuraion ************
 
@@ -17,4 +17,7 @@ sock_port                 = 12313
 	qp[18] <-> qp[17]
 
 ************ End of IB Config ************
+
+
+================ Run Finished ================
 

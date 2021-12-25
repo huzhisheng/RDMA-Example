@@ -16,4 +16,5 @@ int sock_create_connect (char *server_name, char *port);
 int sock_set_qp_info(int sock_fd, struct QPInfo *qp_info);
 int sock_get_qp_info(int sock_fd, struct QPInfo *qp_info);
 
+int sock_sync_data(int sock, int xfer_size, char *local_data, char *remote_data);
 #endif /* SOCK_H_ */

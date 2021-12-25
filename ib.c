@@ -156,7 +156,7 @@ int post_write_signaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
 		.sg_list = &list,
 		.num_sge = 1,
 		.opcode = IBV_WR_RDMA_WRITE,
-		.send_flags = IBV_SEND_SIGNALED | IBV_SEND_INLINE,	//采用inline, 使得buffer可以被立刻重复使用到下一个WR中
+		.send_flags = IBV_SEND_SIGNALED,	//采用inline, 使得buffer可以被立刻重复使用到下一个WR中
 		.wr.rdma.remote_addr = raddr,
 		.wr.rdma.rkey = rkey,
 	};
@@ -184,7 +184,33 @@ int post_write_unsignaled(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
 		.wr_id = wr_id,
 		.sg_list = &list,
 		.num_sge = 1,
-		.opcode = IBV_WR_RDMA_WRITE | IBV_SEND_INLINE,
+		.opcode = IBV_WR_RDMA_WRITE,
+		.wr.rdma.remote_addr = raddr,
+		.wr.rdma.rkey = rkey,
+	};
+
+	ret = ibv_post_send(qp, &send_wr, &bad_send_wr);
+	return ret;
+}
+
+int post_read(uint32_t req_size, uint32_t lkey, uint64_t wr_id,
+						struct ibv_qp *qp, char *buf,
+						uint64_t raddr, uint32_t rkey)
+{
+	int ret = 0;
+	struct ibv_send_wr *bad_send_wr;
+
+	struct ibv_sge list = {
+		.addr = (uintptr_t)buf,
+		.length = req_size,
+		.lkey = lkey};
+
+	struct ibv_send_wr send_wr = {
+		.wr_id = wr_id,
+		.sg_list = &list,
+		.num_sge = 1,
+		.opcode = IBV_WR_RDMA_READ,
+		.send_flags = IBV_SEND_SIGNALED,
 		.wr.rdma.remote_addr = raddr,
 		.wr.rdma.rkey = rkey,
 	};

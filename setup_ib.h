@@ -13,6 +13,7 @@ struct IBRes {
     struct ibv_port_attr	port_attr;
     struct ibv_device_attr	dev_attr;
     struct QPInfo	        remote_qp_info;
+    int                     remote_socket;
 
     char   *ib_buf;
     size_t  ib_buf_size;
